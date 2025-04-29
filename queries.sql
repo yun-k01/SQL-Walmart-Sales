@@ -24,23 +24,28 @@ WHERE (YEAR(Date) = 2012 AND MONTH(Date) = 2)
 GROUP BY Store;
 
 -- Stores With a Greater Sales than the Average in February 2012
+-- Create CTE for Store, Date, Weekly_Sales
+WITH sales_CTE AS (
+    SELECT Store, Date, Weekly_Sales
+    FROM sales
+    WHERE YEAR(Date) = 2012 AND MONTH(Date) = 2)
+    
 SELECT Store, AVG(Weekly_Sales) AS Avg_Sales
-FROM sales
-WHERE (YEAR(Date) = 2012 AND MONTH(Date) = 2)
+FROM sales_CTE
 GROUP BY Store
 HAVING AVG(Weekly_Sales) > (
     SELECT AVG(Weekly_Sales)
-    FROM sales
-    WHERE (YEAR(Date) = 2012 AND MONTH(Date) = 2));
+    FROM sales_CTE);
 
 -- Stores with a Greater Sales than the Week Before in February 2012
-SELECT a.Store, a.Date, a.Weekly_Sales, b.Date AS Prev_Week, b.Weekly_Sales AS Prev_Sales
-FROM (
+WITH sales_CTE AS (
     SELECT Store, Date, Weekly_Sales
     FROM sales
-    WHERE (YEAR(Date) = 2012 AND MONTH(Date) = 2)
-) a
-JOIN sales b
+    WHERE YEAR(Date) = 2012 AND MONTH(Date) = 2)
+
+SELECT a.Store, a.Date, a.Weekly_Sales, b.Date AS Prev_Week, b.Weekly_Sales AS Prev_Sales
+FROM sales_CTE a
+JOIN sales_CTE b
     ON a.Store = b.Store AND a.Date = DATE_ADD(b.DATE, INTERVAL 1 WEEK)
 WHERE a.Weekly_Sales > b.Weekly_Sales
 ORDER BY a.Store, a.Date;
